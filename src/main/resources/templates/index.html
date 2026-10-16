@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('FreshFold Laundry')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main class="hero">
+<div class="hero-copy"><span class="eyebrow">LAUNDRY, MADE SIMPLE</span><h1>Your laundry day,<br><em>taken care of.</em></h1><p>Book a pickup, choose the care your clothes need, and follow every step from your account.</p><div class="actions"><a class="button" href="/register">Book your first pickup <span>→</span></a><a class="text-link" href="/login">I already have an account</a></div><div class="hero-points"><span>✓ Convenient pickup</span><span>✓ Clear per-item pricing</span><span>✓ Order updates</span></div></div>
+<div class="hero-card"><div class="laundry-icon">✦</div><div class="mini-label">GOOD CARE. RIGHT ON TIME.</div><h2>Clean clothes.<br>Clear plans.</h2><p>Washing · Dry cleaning · Ironing</p><div class="card-line"><span>Pickup windows</span><b>9 am – 6 pm</b></div><div class="card-line"><span>Track every order</span><b>In your dashboard</b></div></div>
+</main>
+<section class="services-home" id="services"><span class="eyebrow">HOW WE CARE FOR CLOTHES</span><h2>Pick the care you need</h2><div class="service-cards"><article th:each="s:${services}"><span class="service-star">✦</span><h3 th:text="${s.name}"></h3><p th:text="${s.description}"></p><b th:text="|₹${#numbers.formatDecimal(s.pricePerItem,1,2)} per item|"></b></article></div></section>
+<footer>FreshFold · Online Laundry Service</footer>
+</body></html>
