@@ -2,6 +2,7 @@ package com.laundry.app.web;
 
 import com.laundry.app.model.Account;
 import com.laundry.app.repo.AccountRepository;
+import com.laundry.app.repo.LaundryServiceRepository;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -12,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class AuthController {
     private final AccountRepository accounts; private final PasswordEncoder encoder;
-    public AuthController(AccountRepository a, PasswordEncoder e){accounts=a;encoder=e;}
-    @GetMapping("/") String landing(org.springframework.ui.Model model,com.laundry.app.repo.LaundryServiceRepository services){model.addAttribute("services",services.findByActiveTrueOrderByNameAsc());return "index";}
+    private final LaundryServiceRepository services;
+    public AuthController(AccountRepository a, PasswordEncoder e, LaundryServiceRepository s){accounts=a;encoder=e;services=s;}
+    @GetMapping("/") String landing(Model model){model.addAttribute("services",services.findByActiveTrueOrderByNameAsc());return "index";}
     @GetMapping("/login") String login(){return "login";}
     @GetMapping("/register") String register(Model m){m.addAttribute("account",new Account());return "register";}
     @PostMapping("/register") String register(@Valid @ModelAttribute Account account, BindingResult result,
