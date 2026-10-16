@@ -1,0 +1,9 @@
+.profile-panel{background:#fff;border:1px solid #e6e9e1;border-radius:9px;padding:13px 18px;margin:-10px 0 24px;color:#587064;font-size:12px}
+.profile-panel summary{cursor:pointer;font-weight:700}
+.profile-panel summary span{font-weight:400;color:#74827c}
+.profile-form{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:16px}
+.profile-form .wide{grid-column:span 2}
+.profile-form .button{justify-self:start}
+.estimate{color:#315b4d;font-size:14px}.estimate strong{font-size:20px}
+.services-home{max-width:1112px;margin:0 auto 70px;padding:35px 24px}.services-home h2{font:600 30px 'Playfair Display',Georgia,serif;margin:9px 0 22px}.service-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px}.service-cards article{background:#fff;border:1px solid #e6e9e1;border-radius:10px;padding:20px}.service-star{color:#bb9a60}.service-cards h3{font:600 17px 'Playfair Display',Georgia,serif;margin:10px 0}.service-cards p{font-size:11px;line-height:1.5;color:#74827c;min-height:34px}.service-cards b{font-size:11px;color:#315b4d}
+@media(max-width:760px){.profile-form{grid-template-columns:1fr}.profile-form .wide{grid-column:span 1}}
