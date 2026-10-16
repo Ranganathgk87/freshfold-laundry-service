@@ -46,13 +46,13 @@ The current booking form creates one order line (one clothing type and quantity)
 
 ## Publish a free public demo
 
-GitHub stores and shares the source code. GitHub Pages only serves static websites, so it cannot run this Spring Boot backend. The included Render Blueprint deploys the actual web app with an in-memory H2 database, so no paid database is needed for a college demo.
+The project source is in the [FreshFold GitHub repository](https://github.com/Ranganathgk87/freshfold-laundry-service). GitHub stores and shares the code; Render runs the Spring Boot web app. The included Render Blueprint uses an in-memory H2 database, so a separate paid database is not needed for a college demo.
 
-1. Create a free GitHub account and a public repository, then upload this project source (the ZIP can be extracted and published with GitHub Desktop).
-2. Create a free Render account and connect it to GitHub.
-3. In Render, choose New > Blueprint and select the repository. Render reads render.yaml, configures the free Docker web service, and asks you to set APP_ADMIN_PASSWORD. Enter a new unique password and keep it private.
-4. Deploy. Render builds the Dockerfile and provides a public onrender.com address to share with your group.
+1. Create a Render account and connect it to GitHub, granting access to `freshfold-laundry-service`.
+2. In Render, choose **New > Blueprint** and select the `Ranganathgk87/freshfold-laundry-service` repository. Render reads `render.yaml` and prepares the Docker web service.
+3. Confirm the **Free** plan. When prompted, enter a new unique value for `APP_ADMIN_PASSWORD` and keep it private.
+4. Deploy. Render builds the Dockerfile and provides a public `onrender.com` address to share with your group.
 
-Render free web services sleep after 15 minutes without traffic and can take about a minute to wake up. The demo database is in memory, so customer accounts and orders reset whenever the service restarts or sleeps. The starter laundry catalog is recreated automatically. This free setup is for a class demonstration, not for retaining real customer information. Select the Free plan and do not add a payment method; if free usage limits are reached, Render may suspend the service instead of charging an account without a payment method. Check [Render's free-service limits](https://render.com/docs/free) before publishing.
+Render free web services sleep after 15 minutes without traffic and can take about a minute to wake up. The demo database is in memory, so customer accounts and orders reset whenever the service restarts or sleeps. The starter laundry catalog is recreated automatically. This free setup is for a class demonstration, not for retaining real customer information. Do not add a payment method; if usage would otherwise incur a charge, Render says it disables services instead. See [Render's free-service limits](https://render.com/docs/free) and [billing FAQ](https://render.com/docs/faq).
 
 For a permanent database, local development continues to use MySQL as configured in application.properties. See [Render's Docker deploy guide](https://render.com/docs/docker) for hosting details.
