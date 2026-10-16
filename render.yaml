@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: freshfold-laundry-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /login
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: APP_ADMIN_EMAIL
+        value: admin@laundry.local
+      - key: APP_ADMIN_PASSWORD
+        sync: false
