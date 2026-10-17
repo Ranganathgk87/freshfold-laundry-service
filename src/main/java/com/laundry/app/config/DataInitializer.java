@@ -13,9 +13,12 @@ public class DataInitializer {
     @Bean CommandLineRunner seed(AccountRepository accounts, LaundryServiceRepository services,
             ClothingItemRepository clothes, PasswordEncoder encoder,
             @Value("${APP_ADMIN_EMAIL:admin@laundry.local}") String adminEmail,
-            @Value("${APP_ADMIN_PASSWORD:Admin@12345}") String adminPassword) {
+            @Value("${APP_ADMIN_PASSWORD:}") String adminPassword) {
         return args -> {
             if (!accounts.existsByEmail(adminEmail)) {
+                if (adminPassword == null || adminPassword.isBlank()) {
+                    throw new IllegalStateException("Set APP_ADMIN_PASSWORD before the first application start.");
+                }
                 Account admin=new Account(); admin.setName("Laundry Administrator"); admin.setEmail(adminEmail);
                 admin.setPassword(encoder.encode(adminPassword)); admin.setRole("ADMIN"); accounts.save(admin);
             }
@@ -24,9 +27,12 @@ public class DataInitializer {
                 {"Ironing","Pressed and neatly finished","4"},{"Washing and Ironing","Washed, dried and pressed","9"},{"Folding","Clean folding service","3"}}) {
                 LaundryService s=new LaundryService(); s.setName(row[0]); s.setDescription(row[1]); s.setPricePerItem(Double.valueOf(row[2])); services.save(s);
             }
-            if (clothes.count()==0) for(String name : new String[]{"Shirt","Pant","T-Shirt","Saree","Bedsheet","Towel","Dress"}) {
-                ClothingItem c=new ClothingItem(); c.setName(name); clothes.save(c);
+            for(String name : new String[]{"Shirt","Pant","T-Shirt","Saree","Bedsheet","Towel","Dress","Blanket","Duvet","Curtains"}) {
+                if(clothes.findAll().stream().noneMatch(c -> name.equalsIgnoreCase(c.getName()))) {
+                    ClothingItem c=new ClothingItem(); c.setName(name); clothes.save(c);
+                }
             }
         };
     }
 }
+
