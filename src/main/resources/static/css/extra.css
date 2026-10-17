@@ -7,3 +7,29 @@
 .estimate{color:#315b4d;font-size:14px}.estimate strong{font-size:20px}
 .services-home{max-width:1112px;margin:0 auto 70px;padding:35px 24px}.services-home h2{font:600 30px 'Playfair Display',Georgia,serif;margin:9px 0 22px}.service-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px}.service-cards article{background:#fff;border:1px solid #e6e9e1;border-radius:10px;padding:20px}.service-star{color:#bb9a60}.service-cards h3{font:600 17px 'Playfair Display',Georgia,serif;margin:10px 0}.service-cards p{font-size:11px;line-height:1.5;color:#74827c;min-height:34px}.service-cards b{font-size:11px;color:#315b4d}
 @media(max-width:760px){.profile-form{grid-template-columns:1fr}.profile-form .wide{grid-column:span 1}}
+.booking-items{display:grid;gap:12px}
+.booking-items-heading h3{font:600 17px 'Playfair Display',Georgia,serif;margin:0 0 5px}
+.booking-items-heading p,.booking-hint{margin:0;color:#74827c;font-size:11px;line-height:1.5}
+.booking-item-row{display:grid;grid-template-columns:1.2fr 1.2fr .7fr;gap:14px;padding:16px;border:1px solid #e6e9e1;border-radius:9px;background:#fbfcf9}
+.booking-row-heading{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;color:#315b4d;font-size:12px}
+.remove-item{border:0;background:transparent;color:#a94e45;font:600 11px 'DM Sans',sans-serif;cursor:pointer}
+.remove-item:disabled{visibility:hidden}
+.add-item{justify-self:start}
+.add-item:disabled{opacity:.55;cursor:not-allowed}
+.booking-hint{margin-top:-5px}
+.order-line-list{display:grid;gap:5px;margin-top:10px}
+.order-line{display:flex;gap:8px;flex-wrap:wrap;margin:0;font-size:12px}
+.order-line span{color:#74827c}
+.admin-order-lines p{margin:0 0 7px}
+.admin-order-lines p:last-child{margin-bottom:0}
+.how-it-works{max-width:1112px;margin:0 auto 55px;padding:20px 24px}
+.how-it-works h2{font:600 30px 'Playfair Display',Georgia,serif;margin:9px 0 22px}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.steps-grid article{background:#fff;border:1px solid #e6e9e1;border-radius:10px;padding:22px}
+.steps-grid article>b{color:#9a835b;font-size:11px;letter-spacing:1px}
+.steps-grid h3{font:600 17px 'Playfair Display',Georgia,serif;margin:10px 0}
+.steps-grid p{font-size:12px;line-height:1.6;color:#74827c;margin:0}
+@media(max-width:760px){.steps-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.booking-item-row{grid-template-columns:1fr 1fr}.booking-row-heading{grid-column:1/-1}}
+@media(max-width:430px){.booking-item-row{grid-template-columns:1fr}.booking-row-heading{grid-column:1}}
+
