@@ -1,58 +1,47 @@
 # FreshFold Online Laundry Service
 
-A Spring Boot web application for customer laundry bookings and day-to-day laundry shop management. It follows the supplied project specification and uses Spring MVC, Spring Data JPA, Spring Security, Thymeleaf, MySQL, HTML and CSS.
+FreshFold is a Spring Boot laundry booking and management application. Customers create an account, put several clothing types into one pickup booking, choose the service for each type, and follow the order. Administrators manage bookings, prices, clothing types, payments, delivery dates, and feedback.
 
-## Requirements
+## Main features
 
-- Java 17 or newer
-- Maven 3.6 or newer
-- MySQL 8 or newer
+### Customers
+
+- Register, sign in, and maintain contact and pickup details.
+- Add up to 20 clothing rows to one pickup. Each row has its own care service, clothing type, and quantity.
+- See the estimated total before confirming. The server validates every selection and calculates the saved total from the current catalog prices.
+- Review the itemized order, pickup schedule, delivery date, payment status, order status, and laundry notes.
+- Cancel before pickup, record cash payment after completion, and submit one rating per completed order.
+
+### Administrators
+
+- Review bookings, customer details, and feedback.
+- Change order and payment status, set a delivery date, and leave a customer note.
+- Add or hide laundry services and clothing types.
+- Download an itemized CSV report.
+
+The order workflow is `PICKUP_SCHEDULED`, `PICKED_UP`, `WASHING`, `READY_FOR_DELIVERY`, `OUT_FOR_DELIVERY`, and `COMPLETED`; an administrator can also mark an order cancelled. Payment is recorded as cash paid/unpaid. There is no card or online payment integration.
 
 ## Run locally
 
-1. Start MySQL and create the database with SQL: CREATE DATABASE laundry_db;
-2. Set database connection variables if your local MySQL credentials differ:
-   - DB_URL defaults to jdbc:mysql://localhost:3306/laundry_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-   - DB_USER defaults to root
-   - DB_PASSWORD defaults to an empty password
-3. From this project folder, run: mvn spring-boot:run
-4. Open http://localhost:8080 and create a customer account from the registration page.
+Requirements: Java 17, Maven, and MySQL 8. Local configuration uses MySQL by default. Create the database, then set `DB_URL`, `DB_USER`, and `DB_PASSWORD` if the defaults in `application.properties` do not match your MySQL setup.
 
-The first application start creates the administrator and starter service and clothing catalogs. The default admin login is admin@laundry.local with password Admin@12345. Set APP_ADMIN_EMAIL and APP_ADMIN_PASSWORD before the first start to choose different credentials. Change the default password for any shared or deployed environment. Schema changes are maintained by Hibernate with ddl-auto=update; use reviewed migrations for production.
+Set a private administrator password before starting with a new database. On Windows PowerShell, set it for the current terminal session with `$env:APP_ADMIN_PASSWORD = "your-own-strong-password"`, then run `mvn spring-boot:run`. Open `http://localhost:8080` and create a customer account.
 
-## Features
+For a quick local demo without MySQL, start with the `demo` profile: set `APP_ADMIN_PASSWORD` as above and run `mvn spring-boot:run -Dspring-boot.run.profiles=demo`. This uses an in-memory H2 database and loses its accounts and bookings when the process stops. Never publish a real password in this repository or send it in chat.
 
-### Customer
+## Public demo, database, and availability
 
-- Register, sign in and update name, phone and pickup address
-- Browse active laundry services and per-item prices
-- Book one clothing type per order with quantity, pickup date, time window and address
-- See the calculated estimate, pickup and delivery schedule, payment record, status and laundry notes
-- Cancel an order before pickup, record cash payment after completion, and submit one rating and comment per completed order
+The source is in the [FreshFold GitHub repository](https://github.com/Ranganathgk87/freshfold-laundry-service). The Render Blueprint deploys the app at the free service URL. If `DB_URL`, `DB_USER`, and `DB_PASSWORD` are not configured, the demo profile uses in-memory H2.
 
-### Administrator
+Render Free services sleep after 15 minutes without traffic and may need about one minute to wake. Free Render files are temporary, so the in-memory H2 demo can lose accounts and bookings when the service restarts or sleeps. This is a hosting-plan limitation; a code change cannot make a free Render web service stay awake. See [Render's free service limits](https://render.com/docs/free).
 
-- Review customer accounts and all bookings
-- Update order processing status, payment status, delivery date and customer-facing note
-- Add or hide laundry services and clothing types
-- Review customer feedback
-- Download an order report as CSV
+To preserve records without paying for a database, the app can connect to an external PostgreSQL database by setting `DB_URL`, `DB_USER`, and `DB_PASSWORD` in the Render service's Environment settings. The current [Neon Free plan](https://neon.com/pricing) lists $0 pricing, 1 GB of database storage per project, and compute that scales to zero when idle. Its free usage has monthly limits, so review the provider's current limits before using it. Set `DB_URL` to a JDBC URL such as `jdbc:postgresql://HOST/DATABASE?sslmode=require`, using the host and database name shown by the provider, and set the separate username and password from its connection details. Keep all database credentials private. Switching away from the temporary H2 database does not copy its existing demo accounts or orders.
 
-## Order and payment behavior
+Even with a persistent database, the free Render web service can still sleep. A first visit after an idle period can be slow. The app's health endpoint is `/health`.
 
-Orders progress through PLACED, PICKUP_SCHEDULED, PICKED_UP, WASHING, READY_FOR_DELIVERY, OUT_FOR_DELIVERY and COMPLETED; administrators can also mark an order CANCELLED. The customer can cancel before pickup. Payment is recorded as paid/unpaid by the administrator or by the customer after completion. No payment gateway or online card processing is configured, consistent with the supplied specification's description of online payment as a possible future enhancement.
+## Google search setup
 
-The current booking form creates one order line (one clothing type and quantity) per booking. A customer needing several clothing types can create separate bookings with the same pickup window.
+The public homepage includes a search description and `WebSite` metadata. `/robots.txt` allows the homepage and excludes sign-in, registration, customer, and admin pages. `/sitemap.xml` lists the public homepage. Add the site as a URL-prefix property in [Google Search Console](https://search.google.com/search-console), choose HTML-tag verification, and copy the verification token into the Render `GOOGLE_SITE_VERIFICATION` environment variable. After the new deploy is Live, verify the property, submit `https://freshfold-laundry-demo.onrender.com/sitemap.xml`, and request indexing for the homepage. Google says crawling can take days to weeks and a request does not guarantee search inclusion; see [Google's recrawl guidance](https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl).
 
-## Publish a free public demo
+Render Free returns a restrictive `robots.txt` response while a web service is spun down, so Google may need to retry after the service wakes. Search placement and indexing cannot be guaranteed by the app.
 
-The project source is in the [FreshFold GitHub repository](https://github.com/Ranganathgk87/freshfold-laundry-service). GitHub stores and shares the code; Render runs the Spring Boot web app. The included Render Blueprint uses an in-memory H2 database, so a separate paid database is not needed for a college demo.
-
-1. Create a Render account and connect it to GitHub, granting access to `freshfold-laundry-service`.
-2. In Render, choose **New > Blueprint** and select the `Ranganathgk87/freshfold-laundry-service` repository. Render reads `render.yaml` and prepares the Docker web service.
-3. Confirm the **Free** plan. When prompted, enter a new unique value for `APP_ADMIN_PASSWORD` and keep it private.
-4. Deploy. Render builds the Dockerfile and provides a public `onrender.com` address to share with your group.
-
-Render free web services sleep after 15 minutes without traffic and can take about a minute to wake up. The demo database is in memory, so customer accounts and orders reset whenever the service restarts or sleeps. The starter laundry catalog is recreated automatically. This free setup is for a class demonstration, not for retaining real customer information. Do not add a payment method; if usage would otherwise incur a charge, Render says it disables services instead. See [Render's free-service limits](https://render.com/docs/free) and [billing FAQ](https://render.com/docs/faq).
-
-For a permanent database, local development continues to use MySQL as configured in application.properties. See [Render's Docker deploy guide](https://render.com/docs/docker) for hosting details.

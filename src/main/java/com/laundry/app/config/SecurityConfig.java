@@ -17,10 +17,11 @@ public class SecurityConfig {
             .orElseThrow(() -> new UsernameNotFoundException("Account not found"));
     }
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(a -> a.requestMatchers("/", "/register", "/css/**", "/error").permitAll()
+        http.authorizeHttpRequests(a -> a.requestMatchers("/", "/register", "/css/**", "/js/**", "/robots.txt", "/sitemap.xml", "/health", "/error").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/customer/**").hasRole("CUSTOMER").anyRequest().authenticated())
             .formLogin(f -> f.loginPage("/login").defaultSuccessUrl("/home", true).permitAll())
             .logout(l -> l.logoutSuccessUrl("/").permitAll());
         return http.build();
     }
 }
+

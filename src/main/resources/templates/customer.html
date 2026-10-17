@@ -1,28 +1,85 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('My laundry | FreshFold')}"></head>
+<head th:replace="~{fragments :: head('My laundry | FreshFold','View your FreshFold laundry pickup bookings and order updates.','noindex,nofollow','')}"></head>
 <body>
-<nav class="nav"><a class="brand" href="/"><span class="brand-mark">F</span> freshfold</a><div class="nav-links"><span class="welcome" th:text="|Hello, ${account.name}|"></span><form method="post" th:action="@{/logout}"><button class="link-button">Sign out</button></form></div></nav>
+<nav class="nav">
+  <a class="brand" href="/"><span class="brand-mark">F</span> freshfold</a>
+  <div class="nav-links"><span class="welcome" th:text="|Hello, ${account.name}|"></span><form method="post" th:action="@{/logout}"><button class="link-button">Sign out</button></form></div>
+</nav>
 <main class="page">
-<div th:replace="~{fragments :: flash}"></div>
-<section class="page-heading"><div><span class="eyebrow">YOUR LAUNDRY SPACE</span><h1>Good day, <em th:text="${account.name}">there</em></h1><p>Book a pickup or check in on an order.</p></div><a href="#book" class="button">New booking <span>＋</span></a></section>
-<details class="profile-panel" id="profile"><summary>My profile · <span th:text="${account.email}"></span></summary><form method="post" th:action="@{/customer/profile}" class="profile-form"><label>Name<input name="name" maxlength="100" required th:value="${account.name}"></label><label>Phone<input name="phone" maxlength="30" th:value="${account.phone}"></label><label class="wide">Address<textarea name="address" maxlength="500" th:text="${account.address}"></textarea></label><button class="button">Save profile</button></form></details>
-<section class="panel booking" id="book"><div class="section-title"><div><span class="eyebrow">START HERE</span><h2>Book a laundry pickup</h2></div></div>
-<form method="post" th:action="@{/customer/orders}" class="booking-grid">
-<label>Care service<select id="serviceId" name="serviceId" required><option value="">Choose a service</option><option th:each="s:${services}" th:value="${s.id}" th:attr="data-price=${s.pricePerItem}" th:text="|${s.name} · ₹${#numbers.formatDecimal(s.pricePerItem,1,2)} per item|"></option></select></label>
-<label>Clothing item<select name="clothingItemId" required><option value="">Choose an item</option><option th:each="c:${clothes}" th:value="${c.id}" th:text="${c.name}"></option></select></label>
-<label>Quantity<input type="number" id="quantity" name="quantity" min="1" max="100" value="1" required></label>
-<label>Pickup date<input type="date" name="pickupDate" required></label>
-<label>Pickup window<select name="pickupSlot" required><option value="09:00-12:00">9 am – 12 pm</option><option value="12:00-15:00">12 pm – 3 pm</option><option value="15:00-18:00">3 pm – 6 pm</option></select></label>
-<label class="wide">Pickup address<textarea name="pickupAddress" maxlength="500" required th:text="${account.address}" placeholder="House, street, area, city"></textarea></label>
-<div class="book-bottom"><p class="estimate">Estimated total: <strong id="estimated-total">₹0.00</strong></p><button class="button">Confirm pickup <span>→</span></button></div></form></section>
-<section class="section-block"><div class="section-title"><div><span class="eyebrow">YOUR ORDERS</span><h2>Order history</h2></div><span class="count-pill" th:text="|${#lists.size(orders)} orders|">0 orders</span></div>
-<div th:if="${#lists.isEmpty(orders)}" class="empty"><div class="empty-icon">✧</div><h3>Your first pickup starts here</h3><p>Choose a service above and we’ll take care of the rest.</p></div>
-<div class="order-list"><article class="order-card" th:each="o:${orders}">
-<div class="order-top"><div><span class="order-no" th:text="|ORDER #${o.id}|"></span><h3 th:text="|${o.service.name} · ${o.clothingItem.name} × ${o.quantity}|"></h3><p th:text="|Booked ${#temporals.format(o.createdAt,'dd MMM yyyy')} · Pickup ${#temporals.format(o.pickupDate,'dd MMM yyyy')} (${o.pickupSlot})|"></p></div><span class="status" th:classappend="| status-${#strings.toLowerCase(o.status)}|" th:text="${#strings.replace(o.status,'_',' ')}"></span></div>
-<div class="order-details"><span>Pickup address <b th:text="${o.pickupAddress}"></b></span><span>Delivery date <b th:text="${o.deliveryDate != null ? #temporals.format(o.deliveryDate,'dd MMM yyyy') : 'To be scheduled'}"></b></span><span>Payment <b th:text="${o.paymentStatus}"></b></span><strong th:text="|₹${#numbers.formatDecimal(o.totalAmount,1,2)}|"></strong></div><p class="admin-note" th:if="${o.adminNote}" th:text="|Note from laundry: ${o.adminNote}|"></p>
-<div class="order-actions">
-<form th:if="${o.status == 'PLACED' or o.status == 'PICKUP_SCHEDULED'}" method="post" th:action="@{/customer/orders/{id}/cancel(id=${o.id})}"><button class="button-outline danger">Cancel order</button></form>
-<form th:if="${o.status == 'COMPLETED' and o.paymentStatus == 'UNPAID'}" method="post" th:action="@{/customer/orders/{id}/payment(id=${o.id})}"><button class="button-outline">Record cash payment</button></form>
-<form th:if="${o.status == 'COMPLETED' and !feedbackExists.contains(o.id)}" method="post" th:action="@{/customer/orders/{id}/feedback(id=${o.id})}" class="feedback-form"><select name="rating" aria-label="Rating"><option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option><option value="2">★★</option><option value="1">★</option></select><input name="comment" maxlength="1000" placeholder="Share feedback"><button class="button-outline">Send feedback</button></form>
-</div></article></div></section></main><script src="/js/booking.js"></script></body></html>
+  <div th:replace="~{fragments :: flash}"></div>
+  <section class="page-heading">
+    <div><span class="eyebrow">YOUR LAUNDRY SPACE</span><h1>Good day, <em th:text="${account.name}">there</em></h1><p>Book one pickup for all the clothes you want us to care for.</p></div>
+    <a href="#book" class="button">New booking <span>＋</span></a>
+  </section>
+
+  <details class="profile-panel" id="profile">
+    <summary>My profile · <span th:text="${account.email}"></span></summary>
+    <form method="post" th:action="@{/customer/profile}" class="profile-form">
+      <label>Name<input name="name" maxlength="100" required th:value="${account.name}"></label>
+      <label>Phone<input name="phone" maxlength="30" th:value="${account.phone}"></label>
+      <label class="wide">Address<textarea name="address" maxlength="500" th:text="${account.address}"></textarea></label>
+      <button class="button">Save profile</button>
+    </form>
+  </details>
+
+  <section class="panel booking" id="book">
+    <div class="section-title"><div><span class="eyebrow">START HERE</span><h2>Book a laundry pickup</h2></div></div>
+    <form method="post" th:action="@{/customer/orders}" class="booking-grid" id="booking-form">
+      <div class="booking-items wide">
+        <div class="booking-items-heading"><div><h3>What should we care for?</h3><p>Add a row for each clothing type and choose its service.</p></div></div>
+        <div id="booking-items">
+          <div class="booking-item-row" data-booking-row>
+            <div class="booking-row-heading"><b data-row-label>Item 1</b><button type="button" class="remove-item" data-remove-row disabled>Remove</button></div>
+            <label>Care service<select name="serviceIds" required><option value="">Choose a service</option><option th:each="s:${services}" th:value="${s.id}" th:attr="data-price=${s.pricePerItem}" th:text="|${s.name} · ₹${#numbers.formatDecimal(s.pricePerItem,1,2)} per item|"></option></select></label>
+            <label>Clothing type<select name="clothingItemIds" required><option value="">Choose an item</option><option th:each="c:${clothes}" th:value="${c.id}" th:text="${c.name}"></option></select></label>
+            <label>Quantity<input type="number" name="quantities" min="1" max="100" value="1" required></label>
+          </div>
+        </div>
+        <button type="button" class="button-outline add-item" id="add-booking-item">＋ Add another clothing type</button>
+        <p class="booking-hint">Example: add a blanket row and a separate shirt row. Each row can use its own care service.</p>
+      </div>
+
+      <label>Pickup date<input type="date" name="pickupDate" id="pickup-date" required></label>
+      <label>Pickup window<select name="pickupSlot" required><option value="09:00-12:00">9 am – 12 pm</option><option value="12:00-15:00">12 pm – 3 pm</option><option value="15:00-18:00">3 pm – 6 pm</option></select></label>
+      <label class="wide">Pickup address<textarea name="pickupAddress" maxlength="500" required th:text="${account.address}" placeholder="House, street, area, city"></textarea></label>
+      <div class="book-bottom"><p class="estimate">Estimated total <strong id="estimated-total" aria-live="polite">₹0.00</strong></p><button class="button">Confirm pickup <span>→</span></button></div>
+    </form>
+  </section>
+
+  <template id="booking-row-template">
+    <div class="booking-item-row" data-booking-row>
+      <div class="booking-row-heading"><b data-row-label>Item</b><button type="button" class="remove-item" data-remove-row>Remove</button></div>
+      <label>Care service<select name="serviceIds" required><option value="">Choose a service</option><option th:each="s:${services}" th:value="${s.id}" th:attr="data-price=${s.pricePerItem}" th:text="|${s.name} · ₹${#numbers.formatDecimal(s.pricePerItem,1,2)} per item|"></option></select></label>
+      <label>Clothing type<select name="clothingItemIds" required><option value="">Choose an item</option><option th:each="c:${clothes}" th:value="${c.id}" th:text="${c.name}"></option></select></label>
+      <label>Quantity<input type="number" name="quantities" min="1" max="100" value="1" required></label>
+    </div>
+  </template>
+
+  <section class="section-block">
+    <div class="section-title"><div><span class="eyebrow">YOUR ORDERS</span><h2>Order history</h2></div><span class="count-pill" th:text="|${#lists.size(orders)} orders|">0 orders</span></div>
+    <div th:if="${#lists.isEmpty(orders)}" class="empty"><div class="empty-icon">✧</div><h3>Your first pickup starts here</h3><p>Add the clothing types you need and we’ll collect them together.</p></div>
+    <div class="order-list">
+      <article class="order-card" th:each="o:${orders}">
+        <div class="order-top">
+          <div><span class="order-no" th:text="|ORDER #${o.id}|"></span><h3 th:if="${#lists.isEmpty(o.items)}" th:text="|${o.service.name} · ${o.clothingItem.name} × ${o.quantity}|"></h3>
+            <div class="order-line-list" th:unless="${#lists.isEmpty(o.items)}"><p class="order-line" th:each="line:${o.items}"><b th:text="|${line.clothingItem.name} × ${line.quantity}|"></b><span th:text="|${line.service.name} · ₹${#numbers.formatDecimal(line.lineTotal,1,2)}|"></span></p></div>
+            <p th:text="|Booked ${#temporals.format(o.createdAt,'dd MMM yyyy')} · Pickup ${#temporals.format(o.pickupDate,'dd MMM yyyy')} (${o.pickupSlot})|"></p>
+          </div>
+          <span class="status" th:classappend="| status-${#strings.toLowerCase(o.status)}|" th:text="${#strings.replace(o.status,'_',' ')}"></span>
+        </div>
+        <div class="order-details"><span>Pickup address <b th:text="${o.pickupAddress}"></b></span><span>Delivery date <b th:text="${o.deliveryDate != null ? #temporals.format(o.deliveryDate,'dd MMM yyyy') : 'To be scheduled'}"></b></span><span>Payment <b th:text="${o.paymentStatus}"></b></span><strong th:text="|₹${#numbers.formatDecimal(o.totalAmount,1,2)}|"></strong></div>
+        <p class="admin-note" th:if="${o.adminNote}" th:text="|Note from laundry: ${o.adminNote}|"></p>
+        <div class="order-actions">
+          <form th:if="${o.status == 'PLACED' or o.status == 'PICKUP_SCHEDULED'}" method="post" th:action="@{/customer/orders/{id}/cancel(id=${o.id})}"><button class="button-outline danger">Cancel order</button></form>
+          <form th:if="${o.status == 'COMPLETED' and o.paymentStatus == 'UNPAID'}" method="post" th:action="@{/customer/orders/{id}/payment(id=${o.id})}"><button class="button-outline">Record cash payment</button></form>
+          <form th:if="${o.status == 'COMPLETED' and !feedbackExists.contains(o.id)}" method="post" th:action="@{/customer/orders/{id}/feedback(id=${o.id})}" class="feedback-form"><select name="rating" aria-label="Rating"><option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option><option value="2">★★</option><option value="1">★</option></select><input name="comment" maxlength="1000" placeholder="Share feedback"><button class="button-outline">Send feedback</button></form>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+<script src="/js/booking.js"></script>
+</body>
+</html>
+

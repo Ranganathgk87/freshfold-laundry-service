@@ -16,7 +16,7 @@ public class AdminController {
     private final AccountRepository accounts;private final LaundryServiceRepository services;private final ClothingItemRepository clothes;private final LaundryOrderRepository orders;private final FeedbackRepository feedback;
     public AdminController(AccountRepository a,LaundryServiceRepository s,ClothingItemRepository c,LaundryOrderRepository o,FeedbackRepository f){accounts=a;services=s;clothes=c;orders=o;feedback=f;}
     @GetMapping String dashboard(Model m){
-        m.addAttribute("orders",orders.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,"createdAt")));
+        m.addAttribute("orders",orders.findAllForAdmin());
         m.addAttribute("services",services.findAll());m.addAttribute("clothes",clothes.findAll());m.addAttribute("customers",accounts.findAll().stream().filter(a->a.getRole().equals("CUSTOMER")).toList());
         m.addAttribute("feedback",feedback.findAllByOrderByCreatedAtDesc());m.addAttribute("statuses",LaundryOrder.statuses());m.addAttribute("serviceForm",new LaundryService());m.addAttribute("clothingForm",new ClothingItem());
         m.addAttribute("placed",orders.countByStatus("PLACED"));m.addAttribute("processing",orders.countByStatus("WASHING"));m.addAttribute("completed",orders.countByStatus("COMPLETED"));return "admin/dashboard";
@@ -47,11 +47,22 @@ public class AdminController {
     }
     @GetMapping(value="/report.csv",produces="text/csv")
     @ResponseBody ResponseEntity<byte[]> report(){
-        StringBuilder b=new StringBuilder("Order,Customer,Email,Service,Clothing,Quantity,Amount,Status,Payment,Pickup date,Pickup slot,Delivery date,Created\n");
-        for(LaundryOrder o:orders.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC,"createdAt"))){
-            b.append(o.getId()).append(',').append(csv(o.getCustomer().getName())).append(',').append(csv(o.getCustomer().getEmail())).append(',').append(csv(o.getService().getName())).append(',').append(csv(o.getClothingItem().getName())).append(',').append(o.getQuantity()).append(',').append(o.getTotalAmount()).append(',').append(o.getStatus()).append(',').append(o.getPaymentStatus()).append(',').append(o.getPickupDate()).append(',').append(csv(o.getPickupSlot())).append(',').append(o.getDeliveryDate()).append(',').append(o.getCreatedAt()).append('\n');
+        StringBuilder b=new StringBuilder("Order,Customer,Email,Service,Clothing,Quantity,Unit price,Line total,Order total,Status,Payment,Pickup date,Pickup slot,Delivery date,Created\n");
+        for(LaundryOrder o:orders.findAllForAdmin()){
+            if(o.getItems().isEmpty()){
+                appendReportRow(b,o,o.getService().getName(),o.getClothingItem().getName(),o.getQuantity(),o.getService().getPricePerItem(),o.getTotalAmount());
+            }else for(LaundryOrderItem line:o.getItems()){
+                appendReportRow(b,o,line.getService().getName(),line.getClothingItem().getName(),line.getQuantity(),line.getUnitPrice(),line.getLineTotal());
+            }
         }
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=laundry-orders.csv").contentType(MediaType.parseMediaType("text/csv")).body(b.toString().getBytes(StandardCharsets.UTF_8));
     }
+    private void appendReportRow(StringBuilder b,LaundryOrder order,String service,String clothing,int quantity,Object unitPrice,Object lineTotal){
+        b.append(order.getId()).append(',').append(csv(order.getCustomer().getName())).append(',').append(csv(order.getCustomer().getEmail())).append(',')
+            .append(csv(service)).append(',').append(csv(clothing)).append(',').append(quantity).append(',').append(unitPrice).append(',').append(lineTotal).append(',')
+            .append(order.getTotalAmount()).append(',').append(order.getStatus()).append(',').append(order.getPaymentStatus()).append(',').append(order.getPickupDate()).append(',')
+            .append(csv(order.getPickupSlot())).append(',').append(order.getDeliveryDate()).append(',').append(order.getCreatedAt()).append('\n');
+    }
     private String csv(String v){return "\""+(v==null?"":v.replace("\"","\"\""))+"\"";}
 }
+

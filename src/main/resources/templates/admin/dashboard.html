@@ -1,5 +1,71 @@
-<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Admin dashboard | FreshFold')}"></head><body><nav class="nav"><a class="brand" href="/admin"><span class="brand-mark">F</span> freshfold <small class="admin-tag">ADMIN</small></a><div class="nav-links"><a href="/admin/report.csv">Download report ↓</a><form method="post" th:action="@{/logout}"><button class="link-button">Sign out</button></form></div></nav><main class="page"><div th:replace="~{fragments :: flash}"></div><section class="page-heading"><div><span class="eyebrow">OPERATIONS</span><h1>Admin <em>dashboard</em></h1><p>Keep every pickup, garment and delivery moving.</p></div></section><div class="stats"><article><span>All orders</span><b th:text="${#lists.size(orders)}">0</b><small>Bookings received</small></article><article><span>Awaiting pickup</span><b th:text="${placed}">0</b><small>Placed orders</small></article><article><span>In washing</span><b th:text="${processing}">0</b><small>Being processed</small></article><article><span>Completed</span><b th:text="${completed}">0</b><small>Ready and delivered</small></article></div>
-<section class="section-block" id="orders"><div class="section-title"><div><span class="eyebrow">WORK QUEUE</span><h2>Orders and scheduling</h2></div></div><div class="table-wrap"><table><thead><tr><th>Order / customer</th><th>Service & items</th><th>Pickup / delivery</th><th>Amount</th><th>Update</th></tr></thead><tbody><tr th:each="o:${orders}"><td><b th:text="|#${o.id} · ${o.customer.name}|"></b><small th:text="${o.customer.email}"></small><small th:text="${o.customer.phone}"></small><span class="status" th:text="${#strings.replace(o.status,'_',' ')}"></span></td><td th:text="|${o.service.name} · ${o.clothingItem.name} × ${o.quantity}|"></td><td><b th:text="|Pickup ${o.pickupDate} · ${o.pickupSlot}|"></b><small th:text="${o.pickupAddress}"></small><small th:text="|Delivery: ${o.deliveryDate != null ? o.deliveryDate : 'Not scheduled'}|"></small></td><td><b th:text="|₹${#numbers.formatDecimal(o.totalAmount,1,2)}|"></b><small th:text="|Payment: ${o.paymentStatus}|"></small></td><td><form class="admin-edit" method="post" th:action="@{/admin/orders/{id}(id=${o.id})}"><select name="status"><option th:each="s:${statuses}" th:value="${s}" th:selected="${s==o.status}" th:text="${#strings.replace(s,'_',' ')}"></option></select><select name="paymentStatus"><option value="UNPAID" th:selected="${o.paymentStatus=='UNPAID'}">Unpaid</option><option value="PAID" th:selected="${o.paymentStatus=='PAID'}">Paid</option></select><input type="date" name="deliveryDate" th:value="${o.deliveryDate}"><input name="adminNote" maxlength="1000" th:value="${o.adminNote}" placeholder="Customer note"><button class="button small-button">Save update</button></form></td></tr><tr th:if="${#lists.isEmpty(orders)}"><td colspan="5">No bookings yet.</td></tr></tbody></table></div></section>
-<section class="section-block" id="services"><div class="section-title"><div><span class="eyebrow">CATALOG</span><h2>Services and clothing</h2></div></div><div class="admin-columns"><div class="panel"><h3>Add a laundry service</h3><form method="post" th:action="@{/admin/services}" class="stack-form"><label>Service name<input name="name" required maxlength="100"></label><label>Description<textarea name="description" maxlength="500"></textarea></label><label>Price per item (₹)<input type="number" name="pricePerItem" min="0.01" step="0.01" required></label><button class="button">Add service</button></form><div class="catalog-row" th:each="s:${services}"><span><b th:text="${s.name}"></b><small th:text="|₹${s.pricePerItem} / item · ${s.active ? 'Active':'Hidden'}|"></small></span><form method="post" th:action="@{/admin/services/{id}/toggle(id=${s.id})}"><button class="button-outline" th:text="${s.active ? 'Hide':'Activate'}"></button></form></div></div><div class="panel"><h3>Add a clothing type</h3><form method="post" th:action="@{/admin/clothing}" class="inline-form"><input name="name" maxlength="80" placeholder="e.g. Jacket" required><button class="button">Add item</button></form><div class="catalog-row" th:each="c:${clothes}"><span><b th:text="${c.name}"></b><small th:text="${c.active ? 'Available':'Hidden'}"></small></span><form method="post" th:action="@{/admin/clothing/{id}/toggle(id=${c.id})}"><button class="button-outline" th:text="${c.active ? 'Hide':'Activate'}"></button></form></div></div></div></section>
-<section class="section-block"><div class="section-title"><div><span class="eyebrow">CUSTOMERS</span><h2>Customer records</h2></div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Joined</th></tr></thead><tbody><tr th:each="c:${customers}"><td th:text="${c.name}"></td><td th:text="${c.email}"></td><td th:text="${c.phone}"></td><td th:text="${c.address}"></td><td th:text="${#temporals.format(c.createdAt,'dd MMM yyyy')}"></td></tr></tbody></table></div></section>
-<section class="section-block"><div class="section-title"><div><span class="eyebrow">CUSTOMER CARE</span><h2>Feedback</h2></div></div><div class="feedback-grid"><article class="feedback-card" th:each="f:${feedback}"><b th:text="|Order #${f.laundryOrder.id} · ${f.customer.name}|"></b><span th:text="|Rating: ${f.rating}/5|"></span><p th:text="${f.comment}"></p></article><p th:if="${#lists.isEmpty(feedback)}" class="muted">No feedback yet.</p></div></section></main></body></html>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Admin dashboard | FreshFold','FreshFold laundry service management dashboard','noindex,nofollow','')}"></head>
+<body>
+<nav class="nav">
+  <a class="brand" href="/admin"><span class="brand-mark">F</span> freshfold <small class="admin-tag">ADMIN</small></a>
+  <div class="nav-links"><a href="/admin/report.csv">Download report ↓</a><form method="post" th:action="@{/logout}"><button class="link-button">Sign out</button></form></div>
+</nav>
+<main class="page">
+  <div th:replace="~{fragments :: flash}"></div>
+  <section class="page-heading"><div><span class="eyebrow">OPERATIONS</span><h1>Admin <em>dashboard</em></h1><p>Keep every pickup, garment and delivery moving.</p></div></section>
+  <div class="stats">
+    <article><span>All orders</span><b th:text="${#lists.size(orders)}">0</b><small>Bookings received</small></article>
+    <article><span>Awaiting pickup</span><b th:text="${placed}">0</b><small>Placed orders</small></article>
+    <article><span>In washing</span><b th:text="${processing}">0</b><small>Being processed</small></article>
+    <article><span>Completed</span><b th:text="${completed}">0</b><small>Ready and delivered</small></article>
+  </div>
+
+  <section class="section-block" id="orders">
+    <div class="section-title"><div><span class="eyebrow">WORK QUEUE</span><h2>Orders and scheduling</h2></div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Order / customer</th><th>Service & items</th><th>Pickup / delivery</th><th>Amount</th><th>Update</th></tr></thead>
+      <tbody>
+        <tr th:each="o:${orders}">
+          <td><b th:text="|#${o.id} · ${o.customer.name}|"></b><small th:text="${o.customer.email}"></small><small th:text="${o.customer.phone}"></small><span class="status" th:text="${#strings.replace(o.status,'_',' ')}"></span></td>
+          <td>
+            <span th:if="${#lists.isEmpty(o.items)}" th:text="|${o.service.name} · ${o.clothingItem.name} × ${o.quantity}|"></span>
+            <div class="admin-order-lines" th:unless="${#lists.isEmpty(o.items)}"><p th:each="line:${o.items}"><b th:text="|${line.clothingItem.name} × ${line.quantity}|"></b><small th:text="|${line.service.name} · ₹${#numbers.formatDecimal(line.lineTotal,1,2)}|"></small></p></div>
+          </td>
+          <td><b th:text="|Pickup ${o.pickupDate} · ${o.pickupSlot}|"></b><small th:text="${o.pickupAddress}"></small><small th:text="|Delivery: ${o.deliveryDate != null ? o.deliveryDate : 'Not scheduled'}|"></small></td>
+          <td><b th:text="|₹${#numbers.formatDecimal(o.totalAmount,1,2)}|"></b><small th:text="|Payment: ${o.paymentStatus}|"></small></td>
+          <td><form class="admin-edit" method="post" th:action="@{/admin/orders/{id}(id=${o.id})}">
+            <select name="status"><option th:each="s:${statuses}" th:value="${s}" th:selected="${s==o.status}" th:text="${#strings.replace(s,'_',' ')}"></option></select>
+            <select name="paymentStatus"><option value="UNPAID" th:selected="${o.paymentStatus=='UNPAID'}">Unpaid</option><option value="PAID" th:selected="${o.paymentStatus=='PAID'}">Paid</option></select>
+            <input type="date" name="deliveryDate" th:value="${o.deliveryDate}"><input name="adminNote" maxlength="1000" th:value="${o.adminNote}" placeholder="Customer note"><button class="button small-button">Save update</button>
+          </form></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(orders)}"><td colspan="5">No bookings yet.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="section-block" id="services">
+    <div class="section-title"><div><span class="eyebrow">CATALOG</span><h2>Services and clothing</h2></div></div>
+    <div class="admin-columns">
+      <div class="panel"><h3>Add a laundry service</h3>
+        <form method="post" th:action="@{/admin/services}" class="stack-form">
+          <label>Service name<input name="name" required maxlength="100"></label><label>Description<textarea name="description" maxlength="500"></textarea></label><label>Price per item (₹)<input type="number" name="pricePerItem" min="0.01" step="0.01" required></label><button class="button">Add service</button>
+        </form>
+        <div class="catalog-row" th:each="s:${services}"><span><b th:text="${s.name}"></b><small th:text="|₹${s.pricePerItem} / item · ${s.active ? 'Active':'Hidden'}|"></small></span><form method="post" th:action="@{/admin/services/{id}/toggle(id=${s.id})}"><button class="button-outline" th:text="${s.active ? 'Hide':'Activate'}"></button></form></div>
+      </div>
+      <div class="panel"><h3>Add a clothing type</h3>
+        <form method="post" th:action="@{/admin/clothing}" class="inline-form"><input name="name" maxlength="80" placeholder="e.g. Blanket" required><button class="button">Add item</button></form>
+        <div class="catalog-row" th:each="c:${clothes}"><span><b th:text="${c.name}"></b><small th:text="${c.active ? 'Available':'Hidden'}"></small></span><form method="post" th:action="@{/admin/clothing/{id}/toggle(id=${c.id})}"><button class="button-outline" th:text="${c.active ? 'Hide':'Activate'}"></button></form></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-block"><div class="section-title"><div><span class="eyebrow">CUSTOMERS</span><h2>Customer records</h2></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Joined</th></tr></thead>
+      <tbody><tr th:each="c:${customers}"><td th:text="${c.name}"></td><td th:text="${c.email}"></td><td th:text="${c.phone}"></td><td th:text="${c.address}"></td><td th:text="${#temporals.format(c.createdAt,'dd MMM yyyy')}"></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section class="section-block"><div class="section-title"><div><span class="eyebrow">CUSTOMER CARE</span><h2>Feedback</h2></div></div>
+    <div class="feedback-grid"><article class="feedback-card" th:each="f:${feedback}"><b th:text="|Order #${f.laundryOrder.id} · ${f.customer.name}|"></b><span th:text="|Rating: ${f.rating}/5|"></span><p th:text="${f.comment}"></p></article><p th:if="${#lists.isEmpty(feedback)}" class="muted">No feedback yet.</p></div>
+  </section>
+</main>
+</body>
+</html>
+

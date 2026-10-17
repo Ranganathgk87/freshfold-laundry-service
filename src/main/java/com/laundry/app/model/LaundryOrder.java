@@ -21,6 +21,9 @@ public class LaundryOrder {
     @Column(nullable=false) private String paymentStatus="UNPAID";
     @Column(length=1000) private String adminNote;
     @Column(nullable=false) private LocalDateTime createdAt=LocalDateTime.now();
+    @OneToMany(mappedBy="laundryOrder", cascade=CascadeType.ALL, orphanRemoval=true)
+    @OrderColumn(name="line_number")
+    private List<LaundryOrderItem> items=new ArrayList<>();
     public Long getId(){return id;} public void setId(Long v){id=v;}
     public Account getCustomer(){return customer;} public void setCustomer(Account v){customer=v;}
     public LaundryService getService(){return service;} public void setService(LaundryService v){service=v;}
@@ -35,5 +38,8 @@ public class LaundryOrder {
     public String getPaymentStatus(){return paymentStatus;} public void setPaymentStatus(String v){paymentStatus=v;}
     public String getAdminNote(){return adminNote;} public void setAdminNote(String v){adminNote=v;}
     public LocalDateTime getCreatedAt(){return createdAt;}
+    public List<LaundryOrderItem> getItems(){return items;}
+    public void addItem(LaundryOrderItem item){items.add(item);item.setLaundryOrder(this);}
     public static List<String> statuses(){return List.of("PLACED","PICKUP_SCHEDULED","PICKED_UP","WASHING","READY_FOR_DELIVERY","OUT_FOR_DELIVERY","COMPLETED","CANCELLED");}
 }
+

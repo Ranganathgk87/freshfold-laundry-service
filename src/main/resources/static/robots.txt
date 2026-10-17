@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /customer
+Disallow: /admin
+
+Sitemap: https://freshfold-laundry-demo.onrender.com/sitemap.xml
+

@@ -5,6 +5,7 @@ import com.laundry.app.repo.AccountRepository;
 import com.laundry.app.repo.LaundryServiceRepository;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,8 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AccountRepository accounts; private final PasswordEncoder encoder;
     private final LaundryServiceRepository services;
-    public AuthController(AccountRepository a, PasswordEncoder e, LaundryServiceRepository s){accounts=a;encoder=e;services=s;}
-    @GetMapping("/") String landing(Model model){model.addAttribute("services",services.findByActiveTrueOrderByNameAsc());return "index";}
+    private final String googleSiteVerification;
+    public AuthController(AccountRepository a, PasswordEncoder e, LaundryServiceRepository s,
+            @Value("${GOOGLE_SITE_VERIFICATION:}") String verification){accounts=a;encoder=e;services=s;googleSiteVerification=verification;}
+    @GetMapping("/") String landing(Model model){model.addAttribute("services",services.findByActiveTrueOrderByNameAsc());model.addAttribute("googleSiteVerification",googleSiteVerification);return "index";}
+    @GetMapping("/health") @ResponseBody String health(){return "ok";}
     @GetMapping("/login") String login(){return "login";}
     @GetMapping("/register") String register(Model m){m.addAttribute("account",new Account());return "register";}
     @PostMapping("/register") String register(@Valid @ModelAttribute Account account, BindingResult result,
@@ -31,3 +35,4 @@ public class AuthController {
         return auth.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_ADMIN"))?"redirect:/admin":"redirect:/customer";
     }
 }
+

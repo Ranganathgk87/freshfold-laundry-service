@@ -2,14 +2,17 @@ package com.laundry.app.web;
 
 import com.laundry.app.model.*;
 import com.laundry.app.repo.*;
-import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 
 @Controller @RequestMapping("/customer")
 public class CustomerController {
@@ -31,19 +34,48 @@ public class CustomerController {
         flash.addFlashAttribute("success","Your profile has been updated.");return "redirect:/customer";
     }
     @PostMapping("/orders")
-    String place(Authentication auth,@RequestParam Long serviceId,@RequestParam Long clothingItemId,
-            @RequestParam @Min(1) @Max(100) Integer quantity,
+    String place(Authentication auth,
+            @RequestParam(name="serviceIds",required=false) List<Long> serviceIds,
+            @RequestParam(name="clothingItemIds",required=false) List<Long> clothingItemIds,
+            @RequestParam(name="quantities",required=false) List<Integer> quantities,
             @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate pickupDate,
             @RequestParam String pickupSlot,@RequestParam String pickupAddress,RedirectAttributes flash){
-        if(pickupDate.isBefore(LocalDate.now())) {flash.addFlashAttribute("error","Pickup date must be today or later.");return "redirect:/customer#book";}
-        if(pickupAddress.isBlank()||pickupAddress.length()>500){flash.addFlashAttribute("error","Enter a valid pickup address (up to 500 characters).");return "redirect:/customer#book";}
-        LaundryService service=services.findById(serviceId).filter(LaundryService::isActive).orElse(null);
-        ClothingItem item=clothes.findById(clothingItemId).filter(ClothingItem::isActive).orElse(null);
-        if(service==null||item==null||quantity<1||quantity>100||!java.util.List.of("09:00-12:00","12:00-15:00","15:00-18:00").contains(pickupSlot)){
-            flash.addFlashAttribute("error","Select a valid service, clothing item, quantity and pickup slot.");return "redirect:/customer#book";}
-        LaundryOrder order=new LaundryOrder(); order.setCustomer(accounts.findByEmail(auth.getName()).orElseThrow());
-        order.setService(service);order.setClothingItem(item);order.setQuantity(quantity);
-        order.setTotalAmount(Math.round(service.getPricePerItem()*quantity*100.0)/100.0);
+        if(serviceIds==null||clothingItemIds==null||quantities==null||serviceIds.isEmpty()
+                ||serviceIds.size()>20||serviceIds.size()!=clothingItemIds.size()||serviceIds.size()!=quantities.size()){
+            flash.addFlashAttribute("error","Add between 1 and 20 complete clothing rows to your booking.");return "redirect:/customer#book";}
+        if(pickupDate==null||pickupDate.isBefore(LocalDate.now(ZoneId.of("Asia/Kolkata")))) {
+            flash.addFlashAttribute("error","Pickup date must be today or later.");return "redirect:/customer#book";}
+        if(pickupAddress==null||pickupAddress.isBlank()||pickupAddress.length()>500){flash.addFlashAttribute("error","Enter a valid pickup address (up to 500 characters).");return "redirect:/customer#book";}
+        if(!List.of("09:00-12:00","12:00-15:00","15:00-18:00").contains(pickupSlot)){
+            flash.addFlashAttribute("error","Choose one of the available pickup windows.");return "redirect:/customer#book";}
+
+        LaundryOrder order=new LaundryOrder();
+        order.setCustomer(accounts.findByEmail(auth.getName()).orElseThrow());
+        BigDecimal total=BigDecimal.ZERO;
+        int totalQuantity=0;
+        LaundryService firstService=null;
+        ClothingItem firstClothingItem=null;
+        for(int index=0;index<serviceIds.size();index++){
+            Long serviceId=serviceIds.get(index);
+            Long clothingItemId=clothingItemIds.get(index);
+            Integer quantity=quantities.get(index);
+            if(serviceId==null||clothingItemId==null||quantity==null||quantity<1||quantity>100){
+                flash.addFlashAttribute("error","Choose a service and clothing type, and enter a quantity from 1 to 100 for every row.");return "redirect:/customer#book";}
+            LaundryService service=services.findById(serviceId).filter(LaundryService::isActive).orElse(null);
+            ClothingItem item=clothes.findById(clothingItemId).filter(ClothingItem::isActive).orElse(null);
+            if(service==null||item==null||service.getPricePerItem()==null||service.getPricePerItem()<=0){
+                flash.addFlashAttribute("error","One of the selected services or clothing types is no longer available. Please review your booking.");return "redirect:/customer#book";}
+            BigDecimal unitPrice=BigDecimal.valueOf(service.getPricePerItem()).setScale(2,RoundingMode.HALF_UP);
+            BigDecimal lineTotal=unitPrice.multiply(BigDecimal.valueOf(quantity)).setScale(2,RoundingMode.HALF_UP);
+            LaundryOrderItem line=new LaundryOrderItem();
+            line.setService(service);line.setClothingItem(item);line.setQuantity(quantity);
+            line.setUnitPrice(unitPrice);line.setLineTotal(lineTotal);order.addItem(line);
+            total=total.add(lineTotal);totalQuantity+=quantity;
+            if(firstService==null){firstService=service;firstClothingItem=item;}
+        }
+        // Keep the original order summary fields populated for existing reports and older orders.
+        order.setService(firstService);order.setClothingItem(firstClothingItem);order.setQuantity(totalQuantity);
+        order.setTotalAmount(total.doubleValue());
         order.setPickupDate(pickupDate);order.setPickupSlot(pickupSlot);order.setPickupAddress(pickupAddress.trim());
         order.setStatus("PICKUP_SCHEDULED");orders.save(order);flash.addFlashAttribute("success","Booking placed. Your order number is #"+order.getId()+".");
         return "redirect:/customer";
@@ -69,3 +101,4 @@ public class CustomerController {
         Feedback f=new Feedback();f.setCustomer(o.getCustomer());f.setLaundryOrder(o);f.setRating(rating);f.setComment(comment);feedback.save(f);flash.addFlashAttribute("success","Thank you for your feedback.");return "redirect:/customer";
     }
 }
+

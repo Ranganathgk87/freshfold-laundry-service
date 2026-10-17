@@ -1,1 +1,27 @@
-<!doctype html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:fragment="head(title)"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${title}">FreshFold</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/extra.css"></head><body><nav th:fragment="nav" class="nav"><a class="brand" href="/"><span class="brand-mark">F</span> freshfold</a><div class="nav-links"><a href="/#services">Our care</a><a href="/login">Sign in</a><a class="nav-cta" href="/register">Book a pickup</a></div></nav><div th:fragment="flash" class="flash-wrap"><div th:if="${success}" class="alert success" th:text="${success}"></div><div th:if="${error}" class="alert error" th:text="${error}"></div></div></body></html>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title, description, robots, canonical)">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" th:content="${description}">
+  <meta name="robots" th:content="${robots}">
+  <meta name="google-site-verification" th:if="${googleSiteVerification != null and !#strings.isEmpty(googleSiteVerification)}" th:content="${googleSiteVerification}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FreshFold Laundry">
+  <meta property="og:title" th:content="${title}">
+  <meta property="og:description" th:content="${description}">
+  <meta property="og:url" th:content="${canonical}" th:if="${!#strings.isEmpty(canonical)}">
+  <meta name="theme-color" content="#f7f7f1">
+  <title th:text="${title}">FreshFold</title>
+  <link rel="canonical" th:href="${canonical}" th:if="${!#strings.isEmpty(canonical)}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/extra.css">
+</head>
+<body>
+<nav th:fragment="nav" class="nav"><a class="brand" href="/"><span class="brand-mark">F</span> freshfold</a><div class="nav-links"><a href="/#services">Our care</a><a href="/login">Sign in</a><a class="nav-cta" href="/register">Book a pickup</a></div></nav>
+<div th:fragment="flash" class="flash-wrap"><div th:if="${success}" class="alert success" th:text="${success}"></div><div th:if="${error}" class="alert error" th:text="${error}"></div></div>
+</body>
+</html>
+
