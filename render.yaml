@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /login
+    healthCheckPath: /health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: demo
@@ -12,3 +12,4 @@ services:
         value: admin@laundry.local
       - key: APP_ADMIN_PASSWORD
         sync: false
+
